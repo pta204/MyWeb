@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phạm Tuấn Anh - Trang cá nhân</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f3f4f6;
+            background-image: url('https://hainh2k3.com/wp-content/uploads/2018/11/Tesselation-Transition.gif');
+            background-size: cover;
+            background-position: center;
+        }
+        nav {
+            background: #333;
+            padding: 10px;
+            text-align: center;
+        }
+        nav a {
+            color: white;
+            margin: 0 15px;
+            text-decoration: none;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        header {
+            background: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        img.avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            margin-top: 20px;
+        }
+        section {
+            margin: 20px;
+            background: #e6ffe6;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        section img {
+            float: right;
+            margin-left: 15px;
+        }
+        footer {
+            text-align: center;
+            margin: 20px;
+            font-size: 0.9em;
+        }
+        footer a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+        .contact-form {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .contact-form label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        .contact-form input,
+        .contact-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .contact-form input[type="submit"] {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .contact-form input[type="submit"]:hover {
+            background: #45a049;
+        }
+        button.top-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .zalo-button, .messenger-button {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            z-index: 999;
+            transition: transform 0.3s ease;
+        }
+        .messenger-button {
+            bottom: 150px;
+        }
+        .zalo-button:hover, .messenger-button:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="#about">Giới thiệu</a>
+    <a href="#experience">Kinh nghiệm</a>
+    <a href="#projects">Dự án</a>
+    <a href="#skills">Kỹ năng</a>
+    <a href="#contact">Liên hệ</a>
+</nav>
+
+<header>
+    <img src="https://scontent.fhan5-8.fna.fbcdn.net/v/t39.30808-6/471917439_3982395032047789_351308158928577730_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=3J2QT3QNfM4Q7kNvwEstK4k&_nc_oc=AdnXu2lxJWtzfVeTf13uQHZAoNLZXJR8r5o4NmN-SdgNR6I9HES4pwudPg5PU7_3h1s&_nc_zt=23&_nc_ht=scontent.fhan5-8.fna&_nc_gid=cjEUQpSkWGldU1hxOkyC7Q&oh=00_AfFMNknRnpOH42uUDEuFzN8Mo1xgWLQJzP6CLI8KB7lFDw&oe=67F863EA" alt="Avatar của bạn" class="avatar">
+    <h1>Phạm Tuấn Anh</h1>
+    <p>Sinh viên năm 2 trường Đại học Công Nghệ Thông Tin & Truyền Thông Thái Nguyên.</p>
+</header>
+
+<section id="about">
+    <h2>Giới thiệu</h2>
+    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Giới thiệu" width="80">
+    <p>Tôi là một sinh viên đam mê công nghệ, thích thiết kế và phát triển các trang web sáng tạo, đẹp mắt và thân thiện với người dùng.</p>
+</section>
+
+<section id="experience">
+    <h2>Kinh nghiệm làm việc</h2>
+    <img src="https://cdn-icons-png.flaticon.com/512/9018/9018019.png" alt="Kinh nghiệm" width="80">
+    <p>3 năm học thiết kế và tạo lập trang web.</p>
+</section>
+
+<section id="projects">
+    <h2>Dự án</h2>
+    <img src="https://cdn-icons-png.flaticon.com/512/4542/4542107.png" alt="Dự án" width="80">
+    <ul>
+        <li>Trang web cá nhân</li>
+        <li>Trang web Võ Đường</li>
+        <li>Trang web cho CLB</li>
+    </ul>
+</section>
+
+<section id="skills">
+    <h2>Kỹ năng</h2>
+    <ul>
+        <li>HTML, CSS, JavaScript</li>
+        <li>Thiết kế Web với Bootstrap</li>
+        <li>Git & GitHub</li>
+        <li>Làm việc nhóm và giao tiếp</li>
+    </ul>
+</section>
+
+<section class="contact-form" id="contact">
+    <h2>Gửi tin nhắn cho tôi</h2>
+    <img src="https://cdn-icons-png.flaticon.com/512/646/646094.png" alt="Liên hệ" width="60">
+    <form action="https://formspree.io/f/moqgzjbl" method="POST">
+        <label for="name">Họ tên:</label>
+        <input type="text" id="name" name="name" required>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="_replyto" required>
+
+        <label for="message">Tin nhắn:</label>
+        <textarea id="message" name="message" rows="5" required></textarea>
+
+        <input type="submit" value="Gửi">
+    </form>
+</section>
+
+<footer>
+    <p>Liên hệ: <a href="mailto:DTC235180017@ictu.edu.vn">DTC235180017@ictu.edu.vn</a></p>
+</footer>
+
+<!-- Nút Lên đầu -->
+<button class="top-button" onclick="window.scrollTo({top: 0, behavior: 'smooth'});">⬆️ Lên đầu</button>
+
+<!-- Nút Zalo -->
+<a href="https://zalo.me/0373863004" target="_blank" class="zalo-button" title="Nhắn Zalo với tôi">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Icon_of_Zalo.svg/2048px-Icon_of_Zalo.svg.png" alt="Zalo" width="50">
+</a>
+
+<!-- Nút Messenger -->
+<a href="https://m.me/bachsoik0" target="_blank" class="messenger-button" title="Nhắn qua Messenger">
+    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111342.png" alt="Messenger" width="50">
+</a>
+
+
+</body>
+</html>
