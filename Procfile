@@ -1,1 +1,1 @@
-web: gunicorn --worker-tmp-dir /dev/shm chatbot_all_in_one:app
+web: python chatbot_all_in_one.py
