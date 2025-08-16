@@ -2,24 +2,21 @@
 # PHẦN ĐẦU ĐÃ ĐƯỢC SỬA LẠI ĐỂ TÍCH HỢP GEMINI
 # =========================================================
 from flask import Flask, request, jsonify, Response
-from dotenv import load_dotenv, find_dotenv # <-- THÊM find_dotenv VÀO ĐÂY
+from dotenv import load_dotenv, find_dotenv
 import os
 import google.generativeai as genai
 import markdown
 
 # --- ĐOẠN CODE DEBUG ---
-# Thêm đoạn này vào để kiểm tra
+# Giữ lại đoạn này để tìm lỗi API Key
 print("================ DEBUGGING ================")
-# 1. Tìm kiếm file .env
 dotenv_path = find_dotenv()
 if dotenv_path:
     print(f"Đã tìm thấy file .env tại đường dẫn: {dotenv_path}")
 else:
     print("!!! CẢNH BÁO: Không tìm thấy file .env ở đâu cả!")
     print(f"Thư mục làm việc hiện tại là: {os.getcwd()}")
-
-# 2. Nạp file .env
-load_dotenv() 
+load_dotenv()
 print("Đã thực thi lệnh load_dotenv()")
 print("============================================")
 # --- HẾT ĐOẠN CODE DEBUG ---
@@ -28,28 +25,14 @@ print("============================================")
 # --- Khởi tạo ứng dụng Flask ---
 app = Flask(__name__)
 
-# --- CẤU HÌNH BẢO MẬT VÀ API KEYS (Cách làm đúng) ---
-# 1. API Key bí mật để bảo vệ endpoint /chat của bạn
+# --- CẤU HÌNH BẢO MẬT VÀ API KEYS ---
 SECRET_API_KEY = os.environ.get('SECRET_API_KEY', 'local-secret-key-for-testing')
-
-# 2. Lấy API Key của Gemini từ biến môi trường
-#    Trên Render, bạn cần tạo một biến môi trường tên là 'GEMINI_API_KEY'
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 if not GEMINI_API_KEY:
-    # Nếu không có key, chatbot sẽ không hoạt động. Cần báo lỗi rõ ràng.
-    # Thêm một print nữa ở đây để xác nhận
     print("\n!!! LỖI CUỐI CÙNG: Biến GEMINI_API_KEY vẫn là None sau khi load .env\n")
     raise ValueError("Không tìm thấy GEMINI_API_KEY. Vui lòng thiết lập key.")
 
-# Cấu hình thư viện Gemini với API Key
 genai.configure(api_key=GEMINI_API_KEY)
-
-# ... (phần còn lại của code giữ nguyên) ...
-# =========================================================
-# PHẦN 1: DỮ LIỆU THỰC ĐƠN MẪU -> ĐÃ BỊ XÓA
-# Chúng ta không cần THUC_DON_MAU nữa vì Gemini sẽ tạo nội dung động.
-# Việc này giúp mã nguồn gọn hơn và chatbot thông minh hơn.
-# =========================================================
 
 
 # =========================================================
@@ -57,47 +40,62 @@ genai.configure(api_key=GEMINI_API_KEY)
 # =========================================================
 
 # --- Cấu hình cho mô hình Gemini ---
-# Chọn mô hình phù hợp. 'gemini-1.5-flash' nhanh và hiệu quả.
-generation_config = {
-  "temperature": 0.7,
-  "top_p": 1,
-  "top_k": 1,
-  "max_output_tokens": 2048,
-}
+generation_config = { "temperature": 0.7, "top_p": 1, "top_k": 1, "max_output_tokens": 2048 }
 safety_settings = [
   {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
   {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
   {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
   {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
 ]
-model = genai.GenerativeModel(model_name="gemini-1.5-flash",
-                              generation_config=generation_config,
-                              safety_settings=safety_settings)
+model = genai.GenerativeModel(model_name="gemini-1.5-flash", generation_config=generation_config, safety_settings=safety_settings)
 
 
-# --- Các nội dung HTML, CSS, JS giữ nguyên ---
+# --- NỘI DUNG GIAO DIỆN ĐÃ ĐƯỢC TỐI ƯU RESPONSIVE ---
 HTML_CONTENT = """
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Chatbot Thực Đơn Dinh Dưỡng</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tư Vấn Dinh Dưỡng</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <h2>AI Tư Vấn Dinh Dưỡng (Gemini)</h2>
+            <div class="header-content">
+                <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L8.3 14.3c.11.18.28.3.47.35.32.09.66-.04.86-.31l1.37-1.92c.19-.27.53-.35.8-.16.27.19.35.53.16.8l-1.37 1.92c-.39.55-.22 1.31.33 1.7.39.28.89.28 1.28 0l4.35-3.05c.39-.27.89-.27 1.28 0l.98.68c.27.19.35.53.16.8l-1.37 1.92c-.2.27-.12.65.19.81.31.16.68.04.88-.23l1.89-2.65c.49.61.89 1.31 1.17 2.07H11z"/></svg>
+                <div class="header-text">
+                    <h3>NutriAI</h3>
+                    <p>Trợ lý Dinh dưỡng</p>
+                </div>
+            </div>
         </div>
         <div class="chat-messages" id="chat-messages">
              <div class="message bot-message">
-                Xin chào! Tôi là chuyên gia dinh dưỡng AI. Bạn hãy cho tôi biết mục tiêu của bạn là gì? Ví dụ: "tạo thực đơn giảm cân 1500 calo trong 1 ngày", "thực đơn eat clean cho người bận rộn", "các món ăn tốt cho trí não"...
+                <div class="message-content">
+                    Xin chào! Tôi là NutriAI. Bạn cần tôi giúp gì về dinh dưỡng hôm nay?
+                </div>
+            </div>
+            <div class="quick-replies" id="quick-replies">
+                <button class="quick-reply-btn">Thực đơn giảm cân</button>
+                <button class="quick-reply-btn">Tăng chiều cao và cân nặng</button>
+                <button class="quick-reply-btn">Món ăn cho người tiểu đường</button>
             </div>
         </div>
-        <form class="chat-input-form" id="chat-form">
-            <input type="text" id="user-input" placeholder="Nhập yêu cầu của bạn...">
-            <button type="submit">Gửi</button>
-        </form>
+        <div class="chat-input-area">
+            <form class="chat-input-form" id="chat-form">
+                <input type="text" id="user-input" placeholder="Ví dụ tăng chiều cao" autocomplete="off">
+                <button type="submit" aria-label="Gửi">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
     </div>
     <script src="/script.js"></script>
 </body>
@@ -105,115 +103,263 @@ HTML_CONTENT = """
 """
 
 CSS_CONTENT = """
-body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
-.chat-container { max-width: 600px; margin: 50px auto; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-.chat-header { background-color: #4A90E2; color: white; padding: 15px; text-align: center; } /* Đổi màu cho mới */
-.chat-messages { padding: 20px; height: 400px; overflow-y: auto; background-color: #fff; }
-.message { margin-bottom: 15px; padding: 10px 15px; border-radius: 18px; line-height: 1.5; max-width: 80%; }
-.user-message { background-color: #DCF8C6; text-align: left; margin-left: auto; }
-.bot-message { background-color: #f1f0f0; text-align: left; }
-.chat-input-form { display: flex; padding: 10px; border-top: 1px solid #ccc; background-color: #f9f9f9; }
-#user-input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 20px; }
-button { padding: 10px 15px; border: none; background-color: #4A90E2; color: white; border-radius: 20px; cursor: pointer; margin-left: 10px; }
-h3 { color: #4A90E2; }
-h4 { margin-bottom: 5px; }
-ul { padding-left: 20px; margin-top: 5px; }
-li > em { color: #555; font-size: 0.9em; }
-/* Thêm style cho bảng nếu Gemini trả về bảng */
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-th { background-color: #f2f2f2; }
+:root {
+    --background-color: #f0f2f5;
+    --container-bg: #ffffff;
+    --header-bg: #007bff;
+    --header-bg-hover: #0056b3;
+    --user-message-bg: #007bff;
+    --bot-message-bg: #e9e9eb;
+    --text-color-primary: #1c1e21;
+    --text-color-secondary: #ffffff;
+    --text-color-light: #65676b;
+    --border-color: #dcdfe3;
+    --font-family: 'Nunito', sans-serif;
+}
+html { scroll-behavior: smooth; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: var(--text-color-primary);
+    padding: 10px;
+}
+.chat-container {
+    width: 100%;
+    max-width: 700px; /* Kích thước tối đa trên PC */
+    height: 95vh; /* Chiều cao tương đối trên PC/Laptop */
+    max-height: 850px;
+    background-color: var(--container-bg);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.chat-header {
+    background-color: var(--header-bg);
+    color: var(--text-color-secondary);
+    padding: 16px 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    flex-shrink: 0;
+    z-index: 10;
+}
+.header-content { display: flex; align-items: center; }
+.header-icon { width: 40px; height: 40px; margin-right: 12px; }
+.header-text h3 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+.header-text p { font-size: 0.8rem; opacity: 0.9; margin: 0; }
+.chat-messages {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+@keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.message {
+    display: flex;
+    max-width: 80%;
+    line-height: 1.5;
+    animation: slideIn 0.3s ease-out;
+}
+.message-content {
+    padding: 10px 15px;
+    border-radius: 18px;
+    word-wrap: break-word;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+.user-message { align-self: flex-end; }
+.user-message .message-content {
+    background-color: var(--user-message-bg);
+    color: var(--text-color-secondary);
+    border-bottom-right-radius: 4px;
+}
+.bot-message { align-self: flex-start; }
+.bot-message .message-content {
+    background-color: var(--bot-message-bg);
+    color: var(--text-color-primary);
+    border-bottom-left-radius: 4px;
+}
+/* HIỆU ỨNG ĐANG GÕ... */
+.typing-indicator { display: flex; align-items: center; gap: 5px; padding-top: 8px; }
+.typing-indicator span {
+    height: 8px; width: 8px;
+    background-color: #9db2c2;
+    border-radius: 50%;
+    animation: blink 1.4s infinite both;
+}
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0% { opacity: 0.2; } 20% { opacity: 1; } 100% { opacity: 0.2; } }
+.quick-replies { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 0; justify-content: flex-start; }
+.quick-reply-btn {
+    background-color: var(--container-bg);
+    border: 1px solid var(--header-bg);
+    color: var(--header-bg);
+    padding: 8px 14px;
+    border-radius: 16px;
+    cursor: pointer;
+    font-family: var(--font-family);
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+.quick-reply-btn:hover { background-color: var(--header-bg); color: var(--text-color-secondary); transform: translateY(-2px); }
+.chat-input-area {
+    padding: 15px 20px;
+    border-top: 1px solid var(--border-color);
+    background-color: #f9fafb;
+    flex-shrink: 0;
+}
+.chat-input-form { display: flex; align-items: center; gap: 10px; }
+#user-input {
+    flex: 1;
+    padding: 12px 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 22px;
+    font-size: 1rem;
+    font-family: var(--font-family);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+#user-input:focus { border-color: var(--header-bg); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15); }
+button[type="submit"] {
+    width: 44px; height: 44px;
+    border: none; background-color: var(--header-bg);
+    color: var(--text-color-secondary);
+    border-radius: 50%; cursor: pointer;
+    display: flex; justify-content: center; align-items: center;
+    transition: background-color 0.2s;
+}
+button[type="submit"]:hover { background-color: var(--header-bg-hover); }
+button[type="submit"] svg { width: 24px; height: 24px; }
+.chat-messages::-webkit-scrollbar { width: 6px; }
+.chat-messages::-webkit-scrollbar-track { background: transparent; }
+.chat-messages::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+.chat-messages::-webkit-scrollbar-thumb:hover { background: #aaa; }
+
+/* === TỐI ƯU RESPONSIVE === */
+
+/* Cho Tablet */
+@media (max-width: 768px) {
+    .chat-messages { padding: 15px; }
+    .quick-reply-btn { font-size: 0.85rem; padding: 7px 12px; }
+}
+
+/* Cho Mobile */
+@media (max-width: 500px) {
+    body { padding: 0; }
+    .chat-container {
+        height: 100vh;
+        width: 100vw;
+        border-radius: 0;
+        max-height: none;
+    }
+    .chat-header { padding: 12px 15px; }
+    .chat-input-area { padding: 10px 15px; }
+    .message { max-width: 90%; }
+}
 """
 
-# Chú ý: Cần cập nhật API_KEY trong JS cho khớp với SECRET_API_KEY
-# Ví dụ: os.environ.get('SECRET_API_KEY', 'local-key') thì ở đây cũng phải là 'local-key'
-# Để đơn giản, tôi sẽ giữ nguyên key tạm thời bạn đang dùng.
 JS_CONTENT = """
-document.getElementById('chat-form').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const API_KEY = "local-secret-key-for-testing"; // <-- QUAN TRỌNG: Key này phải khớp với SECRET_API_KEY trên server.
+document.addEventListener('DOMContentLoaded', () => {
+    const chatForm = document.getElementById('chat-form');
     const userInput = document.getElementById('user-input');
-    const message = userInput.value.trim();
-    if (message === "") return;
-
     const chatMessages = document.getElementById('chat-messages');
-    
-    // Hiển thị tin nhắn người dùng
-    const userMessageElem = document.createElement('div');
-    userMessageElem.className = 'message user-message';
-    userMessageElem.textContent = message;
-    chatMessages.appendChild(userMessageElem);
-    userInput.value = '';
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    const quickRepliesContainer = document.getElementById('quick-replies');
+    const quickReplyButtons = document.querySelectorAll('.quick-reply-btn');
+    const API_KEY = "local-secret-key-for-testing";
 
-    // Hiển thị trạng thái "Bot đang gõ..."
-    const loadingMessageElem = document.createElement('div');
-    loadingMessageElem.className = 'message bot-message';
-    loadingMessageElem.innerHTML = "<em>AI đang suy nghĩ...</em>";
-    chatMessages.appendChild(loadingMessageElem);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-
-
-    // Gửi yêu cầu đến server
-    try {
-        const response = await fetch('/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-API-Key': API_KEY
-            },
-            body: JSON.stringify({ message: message })
-        });
-        
-        // Xóa tin nhắn "đang gõ"
-        chatMessages.removeChild(loadingMessageElem);
-        
-        const botMessageElem = document.createElement('div');
-        botMessageElem.className = 'message bot-message';
-
-        if (response.status === 401) {
-            botMessageElem.innerHTML = "Lỗi: API Key không hợp lệ. Vui lòng kiểm tra lại.";
-        } else if (!response.ok) {
-            const errorData = await response.json();
-            botMessageElem.innerHTML = `Lỗi từ server: ${errorData.error || 'Có lỗi xảy ra'}`;
-        } else {
-            const data = await response.json();
-            botMessageElem.innerHTML = data.reply;
+    async function sendMessage(message) {
+        if (!message) return;
+        if (quickRepliesContainer) { quickRepliesContainer.style.display = 'none'; }
+        appendMessage(message, 'user-message');
+        const loadingMessageElem = showTypingIndicator();
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-API-Key': API_KEY },
+                body: JSON.stringify({ message: message })
+            });
+            chatMessages.removeChild(loadingMessageElem);
+            let replyHtml = '';
+            if (response.status === 401) {
+                replyHtml = "Lỗi: API Key không hợp lệ. Vui lòng kiểm tra lại.";
+            } else if (!response.ok) {
+                const errorData = await response.json();
+                replyHtml = `Lỗi từ server: ${errorData.error || 'Có lỗi xảy ra'}`;
+            } else {
+                const data = await response.json();
+                replyHtml = data.reply;
+            }
+            appendMessage(replyHtml, 'bot-message');
+        } catch (error) {
+            if (chatMessages.contains(loadingMessageElem)) {
+                chatMessages.removeChild(loadingMessageElem);
+            }
+            appendMessage("Không thể kết nối đến server. Vui lòng thử lại.", 'bot-message');
         }
-        
-        chatMessages.appendChild(botMessageElem);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 
-    } catch (error) {
-        chatMessages.removeChild(loadingMessageElem);
-        const errorMessageElem = document.createElement('div');
-        errorMessageElem.className = 'message bot-message';
-        errorMessageElem.innerHTML = "Không thể kết nối đến server. Vui lòng thử lại.";
-        chatMessages.appendChild(errorMessageElem);
+    function appendMessage(html, type) {
+        const messageElem = document.createElement('div');
+        messageElem.className = `message ${type}`;
+        const messageContent = document.createElement('div');
+        messageContent.className = 'message-content';
+        messageContent.innerHTML = html;
+        messageElem.appendChild(messageContent);
+        chatMessages.appendChild(messageElem);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
+
+    function showTypingIndicator() {
+        const indicatorHtml = `
+            <div class="message-content">
+                <div class="typing-indicator">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>`;
+        const loadingMessageElem = document.createElement('div');
+        loadingMessageElem.className = 'message bot-message';
+        loadingMessageElem.innerHTML = indicatorHtml;
+        chatMessages.appendChild(loadingMessageElem);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        return loadingMessageElem;
+    }
+
+    chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const message = userInput.value.trim();
+        sendMessage(message);
+        userInput.value = '';
+    });
+
+    quickReplyButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const message = button.textContent;
+            sendMessage(message);
+        });
+    });
 });
 """
 
 # =========================================================
-# PHẦN 3: CÁC ROUTE CỦA FLASK (ĐÃ SỬA LẠI ROUTE /CHAT)
+# PHẦN 3: CÁC ROUTE CỦA FLASK
 # =========================================================
 
 @app.route("/")
-def index():
-    return HTML_CONTENT
-
+def index(): return HTML_CONTENT
 @app.route("/style.css")
-def style():
-    return Response(CSS_CONTENT, mimetype='text/css')
-
+def style(): return Response(CSS_CONTENT, mimetype='text/css')
 @app.route("/script.js")
-def script():
-    return Response(JS_CONTENT, mimetype='application/javascript')
+def script(): return Response(JS_CONTENT, mimetype='application/javascript')
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    # 1. Xác thực API Key của client (giữ nguyên)
     client_api_key = request.headers.get('X-API-Key')
     if not client_api_key or client_api_key != SECRET_API_KEY:
         return jsonify({"error": "Unauthorized"}), 401
@@ -222,46 +368,39 @@ def chat():
     if not user_message:
         return jsonify({"reply": "Vui lòng nhập yêu cầu của bạn."})
 
-    # 2. Tạo prompt (câu lệnh) cho Gemini
-    # Đây là phần quan trọng nhất để điều khiển AI
+    # =======================================================
+    # BỘ NÃO CỦA AI - ĐÃ ĐƯỢC NÂNG CẤP THEO YÊU CẦU CỦA BẠN
+    # =======================================================
     prompt = f"""
-    Bạn là một chuyên gia dinh dưỡng AI tên là NutriAI, rất thân thiện và chuyên nghiệp.
-    Nhiệm vụ của bạn là tạo ra các thực đơn và đưa ra lời khuyên dinh dưỡng dựa trên yêu cầu của người dùng.
-    Luôn trả lời bằng tiếng Việt.
-    Hãy định dạng câu trả lời bằng Markdown để dễ đọc, bao gồm tiêu đề, danh sách, in đậm.
+    ### BỐI CẢNH ###
+    Bạn là một trợ lý AI tên là NutriAI, một chuyên gia dinh dưỡng ảo. Sứ mệnh của bạn là cung cấp thông tin dinh dưỡng chính xác, hữu ích và an toàn cho người dùng.
     
-    YÊU CẦU CỦA NGƯỜI DÙNG: "{user_message}"
+    ### QUY TẮC BẮT BUỘC ###
+    1.  **Chính xác & Ngắn gọn:** Luôn trả lời đi thẳng vào vấn đề, sử dụng ngôn ngữ tự nhiên, dễ hiểu. Thông tin phải chính xác.
+    2.  **Thân thiện & Chuyên nghiệp:** Giữ giọng văn thân thiện, tích cực và chuyên nghiệp.
+    3.  **Duy trì ngữ cảnh:** Luôn ghi nhớ các phần trước của cuộc trò chuyện để câu trả lời được liền mạch.
+    4.  **BẢO MẬT LÀ TRÊN HẾT:** Tuyệt đối không bao giờ yêu cầu người dùng cung cấp thông tin cá nhân nhạy cảm như email, số điện thoại, mật khẩu, địa chỉ nhà.
+    5.  **An toàn y tế:** Nếu yêu cầu của người dùng liên quan đến bệnh lý nghiêm trọng, tình trạng y tế phức tạp, hoặc cần chẩn đoán, bạn PHẢI từ chối một cách lịch sự và nhấn mạnh rằng "Tôi chỉ là một AI, tôi không thể thay thế cho bác sĩ hay chuyên gia y tế. Bạn nên tham khảo ý kiến của chuyên gia thực thụ để có lời khuyên chính xác nhất."
+    6.  **Khi không biết:** Nếu bạn không biết câu trả lời, hãy thừa nhận một cách trung thực. Ví dụ: "Đây là một câu hỏi rất hay, nhưng thông tin này nằm ngoài tầm hiểu biết hiện tại của tôi." Đừng bịa đặt thông tin.
+
+    ### ĐỊNH DẠNG ĐẦU RA ###
+    -   Sử dụng Markdown để định dạng câu trả lời (tiêu đề, danh sách, in đậm) cho dễ đọc.
+    -   Nếu tạo thực đơn, hãy bao gồm: mô tả ngắn, ước tính calo, chi tiết các bữa ăn, và mẹo nhỏ.
     
-    DỰA VÀO YÊU CẦU TRÊN, HÃY CUNG CẤP CÂU TRẢ LỜI.
-    Nếu người dùng yêu cầu tạo thực đơn, hãy bao gồm:
-    - Một mô tả ngắn về thực đơn.
-    - Ước tính lượng calo tổng (nếu có thể).
-    - Chi tiết các bữa ăn (Sáng, Trưa, Tối, và có thể có bữa Phụ).
-    - Một vài hướng dẫn nấu ăn đơn giản hoặc mẹo nhỏ.
+    ### YÊU CẦU CỦA NGƯỜI DÙNG ###
+    "{user_message}"
     
-    Nếu yêu cầu không liên quan đến dinh dưỡng, sức khỏe, hoặc nấu ăn, hãy từ chối một cách lịch sự.
+    ### CÂU TRẢ LỜI CỦA BẠN ###
     """
+    # =======================================================
 
     try:
-        # 3. Gửi prompt đến API của Gemini
         response = model.generate_content(prompt)
-        
-        # 4. Xử lý và trả về kết quả
-        # Chuyển đổi văn bản Markdown từ Gemini sang HTML
         html_reply = markdown.markdown(response.text)
         return jsonify({"reply": html_reply})
-        
     except Exception as e:
-        # Ghi lại lỗi để debug trên server
         print(f"Lỗi khi gọi Gemini API: {e}")
-        # Trả về thông báo lỗi cho người dùng
         return jsonify({"error": "Xin lỗi, tôi đang gặp sự cố khi kết nối đến bộ não AI. Vui lòng thử lại sau."}), 500
 
-
-# Dòng này chỉ dùng khi chạy ở máy bạn
 if __name__ == "__main__":
-    # Nhắc nhở người dùng thiết lập key khi chạy local
-    if not os.environ.get('GEMINI_API_KEY'):
-        print("CẢNH BÁO: Biến môi trường 'GEMINI_API_KEY' chưa được thiết lập.")
-        print("Chatbot có thể sẽ không hoạt động. Hãy tạo file .env hoặc export biến môi trường.")
     app.run(host="0.0.0.0", port=5000, debug=True)
