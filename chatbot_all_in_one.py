@@ -2,55 +2,65 @@
 # PHẦN ĐẦU ĐÃ ĐƯỢC SỬA LẠI ĐỂ TÍCH HỢP GEMINI
 # =========================================================
 from flask import Flask, request, jsonify, Response
-from dotenv import load_dotenv, find_dotenv
+from dotenv import load_dotenv
 import os
 import google.generativeai as genai
 import markdown
 
-# --- ĐOẠN CODE DEBUG ---
-# Giữ lại đoạn này để tìm lỗi API Key
-print("================ DEBUGGING ================")
-dotenv_path = find_dotenv()
-if dotenv_path:
-    print(f"Đã tìm thấy file .env tại đường dẫn: {dotenv_path}")
-else:
-    print("!!! CẢNH BÁO: Không tìm thấy file .env ở đâu cả!")
-    print(f"Thư mục làm việc hiện tại là: {os.getcwd()}")
-load_dotenv()
-print("Đã thực thi lệnh load_dotenv()")
-print("============================================")
-# --- HẾT ĐOẠN CODE DEBUG ---
+# --- KHỞI TẠO VÀ CẤU HÌNH AN TOÀN ---
+try:
+    print("==> Bắt đầu quá trình khởi tạo và cấu hình...") # <-- LOG MỚI
+    
+    # Nạp biến môi trường từ file .env (chỉ có tác dụng khi chạy local)
+    load_dotenv()
+    
+    # --- Khởi tạo ứng dụng Flask ---
+    app = Flask(__name__)
+    
+    # --- CẤU HÌNH BẢO MẬT VÀ API KEYS ---
+    SECRET_API_KEY = os.environ.get('SECRET_API_KEY', 'local-secret-key-for-testing')
+    
+    print("==> Đang đọc biến môi trường GEMINI_API_KEY...") # <-- LOG MỚI
+    GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+    
+    if not GEMINI_API_KEY:
+        # Nếu không có key, ném ra lỗi để bắt ở dưới
+        raise ValueError("LỖI NGHIÊM TRỌNG: Không tìm thấy GEMINI_API_KEY trong biến môi trường.")
+    
+    # In ra vài ký tự đầu của key để xác nhận (nhưng không in ra toàn bộ)
+    print(f"==> Đã tìm thấy API Key, bắt đầu bằng: '{GEMINI_API_KEY[:4]}...'") # <-- LOG MỚI
+    
+    # Cấu hình thư viện Gemini với API Key
+    print("==> Đang cấu hình genai với API Key...") # <-- LOG MỚI
+    genai.configure(api_key=GEMINI_API_KEY)
+    
+    # --- Cấu hình cho mô hình Gemini ---
+    print("==> Đang tạo model Gemini...") # <-- LOG MỚI
+    generation_config = { "temperature": 0.7, "top_p": 1, "top_k": 1, "max_output_tokens": 2048 }
+    safety_settings = [
+      {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+      {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+      {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+      {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+    ]
+    model = genai.GenerativeModel(model_name="gemini-1.5-flash", generation_config=generation_config, safety_settings=safety_settings)
+    
+    print("==> Quá trình khởi tạo và cấu hình THÀNH CÔNG!") # <-- LOG MỚI
 
-
-# --- Khởi tạo ứng dụng Flask ---
-app = Flask(__name__)
-
-# --- CẤU HÌNH BẢO MẬT VÀ API KEYS ---
-SECRET_API_KEY = os.environ.get('SECRET_API_KEY', 'local-secret-key-for-testing')
-GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
-if not GEMINI_API_KEY:
-    print("\n!!! LỖI CUỐI CÙNG: Biến GEMINI_API_KEY vẫn là None sau khi load .env\n")
-    raise ValueError("Không tìm thấy GEMINI_API_KEY. Vui lòng thiết lập key.")
-
-genai.configure(api_key=GEMINI_API_KEY)
-
+except Exception as e:
+    # Đây là phần quan trọng nhất: Bắt lỗi và in ra chi tiết
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    print("!!!    ĐÃ XẢY RA LỖI NGHIÊM TRỌNG KHI KHỞI ĐỘNG ỨNG DỤNG    !!!")
+    print(f"!!!    LOẠI LỖI: {type(e).__name__}")
+    print(f"!!!    CHI TIẾT LỖI: {e}")
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    # Ném lại lỗi để ứng dụng vẫn dừng lại như bình thường
+    raise e
 
 # =========================================================
-# PHẦN 2: LOGIC PYTHON VÀ NỘI DUNG GIAO DIỆN
+# PHẦN 2: NỘI DUNG GIAO DIỆN (Giữ nguyên)
 # =========================================================
 
-# --- Cấu hình cho mô hình Gemini ---
-generation_config = { "temperature": 0.7, "top_p": 1, "top_k": 1, "max_output_tokens": 2048 }
-safety_settings = [
-  {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-  {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-  {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-  {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-]
-model = genai.GenerativeModel(model_name="gemini-1.5-flash", generation_config=generation_config, safety_settings=safety_settings)
-
-
-# --- NỘI DUNG GIAO DIỆN ĐÃ ĐƯỢC TỐI ƯU RESPONSIVE ---
 HTML_CONTENT = """
 <!DOCTYPE html>
 <html lang="vi">
@@ -346,7 +356,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 """
-
 # =========================================================
 # PHẦN 3: CÁC ROUTE CỦA FLASK
 # =========================================================
@@ -368,9 +377,6 @@ def chat():
     if not user_message:
         return jsonify({"reply": "Vui lòng nhập yêu cầu của bạn."})
 
-    # =======================================================
-    # BỘ NÃO CỦA AI - ĐÃ ĐƯỢC NÂNG CẤP THEO YÊU CẦU CỦA BẠN
-    # =======================================================
     prompt = f"""
     ### BỐI CẢNH ###
     Bạn là một trợ lý AI tên là NutriAI, một chuyên gia dinh dưỡng ảo. Sứ mệnh của bạn là cung cấp thông tin dinh dưỡng chính xác, hữu ích và an toàn cho người dùng.
@@ -392,7 +398,6 @@ def chat():
     
     ### CÂU TRẢ LỜI CỦA BẠN ###
     """
-    # =======================================================
 
     try:
         response = model.generate_content(prompt)
@@ -404,4 +409,3 @@ def chat():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
-    #Test Deploy
