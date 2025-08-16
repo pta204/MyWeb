@@ -1,1 +1,1 @@
-web: python chatbot_all_in_one.py
+web: gunicorn chatbot_all_in_one:app
