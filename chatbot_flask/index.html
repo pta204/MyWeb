@@ -1,0 +1,51 @@
+HTML_CONTENT = """
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tư Vấn Dinh Dưỡng</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="header-content">
+                <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L8.3 14.3c.11.18.28.3.47.35.32.09.66-.04.86-.31l1.37-1.92c.19-.27.53-.35.8-.16.27.19.35.53.16.8l-1.37 1.92c-.39.55-.22 1.31.33 1.7.39.28.89.28 1.28 0l4.35-3.05c.39-.27.89-.27 1.28 0l.98.68c.27.19.35.53.16.8l-1.37 1.92c-.2.27-.12.65.19.81.31.16.68.04.88-.23l1.89-2.65c.49.61.89 1.31 1.17 2.07H11z"/></svg>
+                <div class="header-text">
+                    <h3>NutriAI</h3>
+                    <p>Trợ lý Dinh dưỡng</p>
+                </div>
+            </div>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+             <div class="message bot-message">
+                <div class="message-content">
+                    Xin chào! Tôi là NutriAI. Bạn cần tôi giúp gì về dinh dưỡng hôm nay?
+                </div>
+            </div>
+            <!-- CÁC NÚT CHỌN NHANH -->
+            <div class="quick-replies" id="quick-replies">
+                <button class="quick-reply-btn">Thực đơn giảm cân</button>
+                <button class="quick-reply-btn">Tăng chiều cao và cân nặng</button>
+                <button class="quick-reply-btn">Món ăn cho người tiểu đường</button>
+            </div>
+        </div>
+        <div class="chat-input-area">
+            <form class="chat-input-form" id="chat-form">
+                <!-- PLACEHOLDER ĐÃ ĐƯỢC CẬP NHẬT -->
+                <input type="text" id="user-input" placeholder="Ví dụ tăng chiều cao" autocomplete="off">
+                <button type="submit" aria-label="Gửi">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+    <script src="/script.js"></script>
+</body>
+</html>
